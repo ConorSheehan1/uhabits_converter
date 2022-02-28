@@ -22,6 +22,7 @@ class Root(FloatLayout):
     loadfile = ObjectProperty(None)
     savefile = ObjectProperty(None)
     text_input = ObjectProperty(None)
+    home_dir = os.path.expanduser('~')
 
     def dismiss_popup(self):
         self._popup.dismiss()

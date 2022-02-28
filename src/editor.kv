@@ -2,6 +2,7 @@
 
 Root:
     text_input: text_input
+    home_dir: root.home_dir
 
     BoxLayout:
         orientation: 'vertical'
@@ -25,6 +26,9 @@ Root:
                 show_errors: True
 
 <LoadDialog>:
+    FileChooserListView:
+        id: filechooser
+        path: root.home_dir
     BoxLayout:
         size: root.size
         pos: root.pos

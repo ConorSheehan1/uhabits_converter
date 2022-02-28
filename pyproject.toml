@@ -6,10 +6,37 @@ authors = ["Conor Sheehan <conor.sheehan.dev@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.6.8"
 Kivy = "1.11.1"
 
 [tool.poetry.dev-dependencies]
+black = "^22.1.0"
+isort = "^5.10.1"
+taskipy = "^1.10.1"
+mypy = "^0.931"
+
+[tool.taskipy.tasks]
+bumpversion = "bumpversion"
+ci_lint = "black --check ."
+ci_isort = "isort --check --diff ."
+dev = "python shot.py"
+isort = 'isort .'
+lint = "black ."
+mypy = "mypy --ignore-missing-imports shot.py"
+
+# linter configs
+[tool.isort]
+import_heading_stdlib = "Standard Library"
+import_heading_thirdparty = "Third party"
+# copied from https://github.com/psf/black/blob/master/docs/compatible_configs.md
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+line_length = 100
+
+[tool.black]
+line_length = 100
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
