@@ -1,17 +1,19 @@
-
-from typing import List
-import fire
+# Standard Library
 import os
-from rich.console import Console
-from rich.prompt import Prompt
-from rich.progress import track
+from typing import List
+
+# Third party
+import fire
 import inquirer
+from rich.console import Console
+from rich.progress import track
+from rich.prompt import Prompt
 
-
-from version import __version__
 from convert import Converter
+from version import __version__
 
 console = Console(color_system="auto")
+
 
 def select_db():
     while True:
@@ -19,13 +21,18 @@ def select_db():
         if not os.path.exists(proposed_db):
             console.print(f"could not find file {proposed_db}", style="yellow")
             continue
-        if not proposed_db.endswith('.db'):
+        if not proposed_db.endswith(".db"):
             console.print(f"please choose a .db file", style="yellow")
             continue
         return proposed_db
 
+
 def overwrite_file(path: str):
-    Prompt.ask(f"{path} already exists. Would you like to overwrite it?", choices=["y", "n"]) == "y"
+    return (
+        Prompt.ask(f"{path} already exists. Would you like to overwrite it?", choices=["y", "n"])
+        == "y"
+    )
+
 
 def select_outputdb(outputdb, overwrite: bool = False):
     while True:
@@ -35,16 +42,25 @@ def select_outputdb(outputdb, overwrite: bool = False):
         if overwrite or overwrite_file(outputdb):
             return outputdb
 
-        proposed_db = Prompt.ask("Please choose a .db file to write to")
-        if os.path.exists(proposed_db) or not proposed_db:
-            continue
-        if not proposed_db.endswith('.db'):
+        proposed_db = inquirer.prompt(
+            [
+                inquirer.Path(
+                    "outputdb",
+                    message="Please choose a .db file to write to",
+                    path_type=inquirer.Path.DIRECTORY,
+                ),
+            ]
+        )
+
+        if not proposed_db.endswith(".db"):
             console.print(f"please choose a .db file", style="yellow")
             continue
         return proposed_db
 
 
-def main(db: str = "", outputdb: str = '', habits: List = [], yes: bool=False, version: bool=False):
+def main(
+    db: str = "", outputdb: str = "", habits: List = [], yes: bool = False, version: bool = False
+):
     if version:
         return __version__
 
@@ -54,15 +70,34 @@ def main(db: str = "", outputdb: str = '', habits: List = [], yes: bool=False, v
     outputdb = outputdb or "output.db"
     outputdb = select_outputdb(outputdb, overwrite=yes)
 
-    kwargs = {"inputdb": db ,"outputdb": outputdb}
+    kwargs = {"inputdb": db, "outputdb": outputdb}
     console.print(f"Connecting to {db}", style="green")
     c = Converter(**kwargs)
 
     if not habits:
-        c.get_bool_habits()
+        console.print(f"Selecting habits interactively")
+        include_archived = (
+            Prompt.ask("Would you like to convert archived habits", choices=["y", "n"]) == "y"
+        )
+        bool_habits = c.get_bool_habits(include_archived)
+        habits = inquirer.prompt(
+            [
+                inquirer.Checkbox(
+                    "habits",
+                    message="Which habits would you like to convert?",
+                    choices=[h["name"] for h in bool_habits],
+                ),
+            ]
+        )["habits"]
+        # Standard Library
+        import pdb
 
-    for habit in track(habits, description="Processing..."):
-        c.convert_bool_habit_to_num(habit_name=habit)
+        pdb.set_trace()
+
+    for habit in track(habits, description="Converting habits..."):
+        errors = c.convert_bool_habit_to_num(habit_name=habit)
+        if errors:
+            console.print(errors, style="red")
 
 
 if __name__ == "__main__":
