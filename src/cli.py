@@ -15,7 +15,7 @@ from version import __version__
 console = Console(color_system="auto")
 
 
-def select_db():
+def select_db() -> str:
     while True:
         proposed_db = Prompt.ask("Please choose a .db file to read from")
         if not os.path.exists(proposed_db):
@@ -27,14 +27,14 @@ def select_db():
         return proposed_db
 
 
-def overwrite_file(path: str):
+def overwrite_file(path: str) -> bool:
     return (
         Prompt.ask(f"{path} already exists. Would you like to overwrite it?", choices=["y", "n"])
         == "y"
     )
 
 
-def select_outputdb(outputdb, overwrite: bool = False):
+def select_outputdb(outputdb, overwrite: bool = False) -> str:
     while True:
         if not os.path.exists(outputdb):
             return outputdb

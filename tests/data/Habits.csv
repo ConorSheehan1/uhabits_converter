@@ -1,0 +1,7 @@
+Id,archived,color,description,freq_den,freq_num,highlight,name,position,reminder_days,reminder_hour,reminder_min,type,target_type,target_value,unit,question,uuid
+1,0,7,,7,3,0,Gym,4,84,19,0,0,0,0.0,,Did you lift today?,e7b2eace076600d63ef95be46fc5912a31
+2,0,15,,7,2,0,Drink,5,0,,,0,0,1.0,,,1a29a84792d1d1fa7371ee8036ccb10a32
+3,0,7,,1,1,0,Program,6,0,,,0,0,0.0,,,eda88bbe6d96c4962bf9f6974c212b9f37
+4,1,15,,1,1,0,Sweets,3,0,,,0,0,0.0,,,1a3dad7a2c27fd08d9599292775c0ed43136
+5,0,15,,7,5,0,Coffee,2,0,,,0,0,1.0,,,34458704a3658719926fae6f647cd0ae3338
+6,0,15,,1,1,0,Tea,1,0,,,1,0,1.0,cups,How many cups of tea did you drink?,43a1e0375b9f498180c82b4156048c8b
