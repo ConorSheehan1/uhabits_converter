@@ -2,8 +2,8 @@
 [![Build Status](https://github.com/ConorSheehan1/uhabits_converter/workflows/ci/badge.svg)](https://github.com/ConorSheehan1/uhabits_converter/actions/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Tested Operating Systems](https://img.shields.io/badge/dynamic/yaml?url=https://raw.githubusercontent.com/ConorSheehan1/uhabits_converter/master/.github/workflows/ci.yml&label=os&query=$.jobs.build.strategy.matrix.os)](https://github.com/ConorSheehan1/uhabits_converter/blob/master/.github/workflows/ci.yml#L25)
-[![Tested python versions](https://img.shields.io/badge/dynamic/yaml?url=https://raw.githubusercontent.com/ConorSheehan1/uhabits_converter/master/.github/workflows/ci.yml&label=Tested%20python%20versions&query=$.jobs.build.strategy.matrix.python)](https://github.com/ConorSheehan1/uhabits_converter/blob/master/.github/workflows/ci.yml#L26)
+[![Tested Operating Systems](https://img.shields.io/badge/dynamic/yaml?url=https://raw.githubusercontent.com/ConorSheehan1/uhabits_converter/main/.github/workflows/ci.yml&label=os&query=$.jobs.build.strategy.matrix.os)](https://github.com/ConorSheehan1/uhabits_converter/blob/main/.github/workflows/ci.yml#L25)
+[![Tested python versions](https://img.shields.io/badge/dynamic/yaml?url=https://raw.githubusercontent.com/ConorSheehan1/uhabits_converter/main/.github/workflows/ci.yml&label=Tested%20python%20versions&query=$.jobs.build.strategy.matrix.python)](https://github.com/ConorSheehan1/uhabits_converter/blob/main/.github/workflows/ci.yml#L26)
 
 [Loop Habit / uhabits](https://github.com/iSoron/uhabits) converter.
 
