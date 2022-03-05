@@ -6,7 +6,7 @@ authors = ["Conor Sheehan <conor.sheehan.dev@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = ">=3.7"
+python = ">=3.8"
 fire = "^0.4.0"
 rich = "^11.2.0"
 inquirer = "^2.9.1"
