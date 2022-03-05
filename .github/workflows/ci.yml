@@ -47,6 +47,8 @@ jobs:
       - name: Lint isort
         run: |
           poetry run task ci_isort
-      - name: Lint mypy
-        run: |
-          poetry run task mypy
+      # # mypy fails on windows due to changing slashes
+      # # mypy: can't read file 'src\*.py': Invalid argument
+      # - name: Lint mypy
+      #   run: |
+      #     poetry run task mypy

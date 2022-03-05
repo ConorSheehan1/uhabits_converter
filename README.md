@@ -28,8 +28,8 @@ poetry install
 1. Follow the instructions for **How can I export a full backup of my data?**
     1. https://github.com/iSoron/uhabits/discussions/689 
     > Select the option "Export full backup" on the settings screen.
-2. Copy the .db file to your computer
-3. run `poetry run task cli`
+2. Copy the `.db` file to your computer
+3. `poetry run task cli`
     1. You can specify arguments up front or interactively. e.g.
     `poetry run task cli --db=Loop_Habits_Backup_2022-02-28_220305.db --habits=Gym,Coffee`
     this will convert the habits Gym and Coffee from boolean to numeric habits.
