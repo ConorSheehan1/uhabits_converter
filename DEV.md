@@ -21,3 +21,9 @@ poetry run task mypy
 # pass args e.g. patch, minor, major, choose to commit changes or not
 poetry run bumpversion --commit --tag patch
 ```
+
+### GitHooks
+To setup git hooks run:
+```bash
+poetry run pre-commit install
+```
