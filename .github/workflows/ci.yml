@@ -1,0 +1,51 @@
+name: ci
+
+on:
+  # https://github.blog/changelog/2020-07-06-github-actions-manual-triggers-with-workflow_dispatch/
+  workflow_dispatch:
+  push:
+    branches:
+      - '**'
+    tags-ignore:
+      - '*.*' # don't run ci on tags, should already have run on commit tag points to.
+    paths-ignore:
+      - README.md # don't run for readme changes.
+  pull_request:
+    branches:
+      - 'dependabot*'
+  schedule:
+    - cron: '0 0 * * 1' # Every monday at midnight
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: [3.7, 3.8, 3.9]
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install Poetry
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+      - name: Install python packages
+        run: |
+          poetry install
+      - name: Run tests
+        run: |
+          poetry run task tests
+      - name: Lint black
+        run: |
+          poetry run task ci_lint
+      - name: Lint isort
+        run: |
+          poetry run task ci_isort
+      - name: Lint mypy
+        run: |
+          poetry run task mypy
