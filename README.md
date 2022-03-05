@@ -19,7 +19,8 @@ It has been tested with version [2.0.3](https://github.com/iSoron/uhabits/releas
 
 ## Installation
 ```bash
-# install python
+# install python (>=3.8 check pyproject.toml)
+# https://github.com/ConorSheehan1/uhabits_converter/blob/main/pyproject.toml#L9
 pip install poetry
 poetry install
 ```

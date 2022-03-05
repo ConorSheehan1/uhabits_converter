@@ -34,3 +34,5 @@ class TestConverter(unittest.TestCase):
         actual = [v["name"] for v in self.converter.get_bool_habits()]
         expected = ["Coffee", "Gym", "Drink", "Program"]
         assert expected == actual
+
+    # TODO: test convert_bool_habit_to_num
