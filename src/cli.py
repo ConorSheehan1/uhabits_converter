@@ -64,6 +64,10 @@ def main(
     if version:
         return __version__
 
+    if not isinstance(habits, list):
+        console.print(f"habits must be a list. got {type(habits)}. always include commas, even for a single habit. e.g. cli --habits=Gym,")
+        return False
+
     if not db:
         db = select_db()
 
