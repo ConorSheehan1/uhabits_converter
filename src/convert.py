@@ -26,7 +26,7 @@ class Converter:
         return self.cursor.execute(f"SELECT * FROM Habits WHERE {where} ORDER BY {sort};")
 
     def convert_bool_habit_to_num(
-        self, habit_name: str, old_value: int = 2, new_value: int = 1000
+        self, habit_name: str, old_value: int = 2, new_value: int = 1000, target_value: int = 7
     ) -> Union[str, Literal[False]]:
         # TODO: pass habit_id, handle duplicate habits with same name
         # different new_value may require change to sqlite_repetitions table?
@@ -44,11 +44,12 @@ class Converter:
 
         # update habit target_value if necessary
         if habit["target_value"] < 1:
-            # TODO: find value so charts match old boolean habbit
-            # 1 too low, 10 too high?
-            print(f"found target value of {habit['target_value']} < 1, updating...")
+            # boolean habits with a target of 0 have an implicit scope of weekly, choose 7 by default
+            print(
+                f"found target value of {habit['target_value']} < 1, updating to {target_value}..."
+            )
             self.cursor.execute(
-                f"UPDATE Habits Set target_value = 1 where Id IS {habit['Id']} AND TYPE IS {self.bool_habit_type};"
+                f"UPDATE Habits Set target_value = {target_value} where Id IS {habit['Id']} AND TYPE IS {self.bool_habit_type};"
             )
 
         # update habit type

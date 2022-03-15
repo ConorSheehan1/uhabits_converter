@@ -17,6 +17,12 @@ It has been tested with version [2.0.3](https://github.com/iSoron/uhabits/releas
 ## Features
 1. Convert boolean habits to the new numeric habit type.
 
+## Example output
+| Before                                          | After                                         |
+| ----------------------------------------------- | --------------------------------------------- |
+| ![coffee_bool](.github/images/coffee_bool.jpg)  | ![coffee_num](.github/images/coffee_num.jpg)  |
+
+
 ## Installation
 ```bash
 # install python (>=3.8 check pyproject.toml)

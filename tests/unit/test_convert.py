@@ -54,6 +54,7 @@ class TestConverter(unittest.TestCase):
         habit_before = self.get_habit_by_name("Coffee")
         reps_before = self.get_entries_by_id(habit_before["Id"])
         assert habit_before["type"] == 0
+        assert habit_before["target_value"] == 0
         assert all([rep["value"] == 2 for rep in reps_before])
 
         # Assert all boolean habits
@@ -70,4 +71,5 @@ class TestConverter(unittest.TestCase):
         habit_after = self.get_habit_by_name("Coffee")
         reps_after = self.get_entries_by_id(habit_after["Id"])
         assert habit_after["type"] == 1
+        assert habit_after["target_value"] == 7
         assert all([rep["value"] == 1000 for rep in reps_after])

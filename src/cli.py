@@ -63,6 +63,7 @@ def main(
     outputdb: str = "",
     habits: List = [],
     new_value: int = 1000,
+    target_value: int = 7,
     yes: bool = False,
     version: bool = False,
 ):
@@ -70,12 +71,13 @@ def main(
     entrypoint for uhabits converter cli
 
     Args:
-        db:         input database path (must already exist)
-        outputdb:   output database path (if already exists, confirm overwrite)
-        habits:     list of boolean habits to convert to numeric
-        new_value:  new numeric value. default is 1000. sqlite has no float type, so large int is used for float precision. e.g. if you want 2, set as 2000.
-        yes:        answer yes to all prompts.
-        version:    print version.
+        db:             input database path. must already exist. if not provided, choose interactively.
+        outputdb:       output database path. if already exists, confirm overwrite.
+        habits:         list of boolean habits to convert to numeric. if not provided, choose interactively.
+        new_value:      new numeric value. default is 1000. sqlite has no float type, so large int is used for float precision. e.g. if you want 2, set as 2000.
+        target_value:   boolean habits with a target of 0 have an implicit scope of weekly, choose 7 by default.
+        yes:            answer yes to all prompts.
+        version:        print version.
     """
     if version:
         return __version__
@@ -93,7 +95,7 @@ def main(
     outputdb = select_outputdb(outputdb, overwrite=yes)
 
     kwargs = {"inputdb": db, "outputdb": outputdb}
-    console.print(f"Connecting to {db}", style="green")
+    console.print(f"Reading from {db}, writing to {outputdb}", style="green")
     c = Converter(**kwargs)
 
     if not habits:
@@ -113,7 +115,9 @@ def main(
         )["habits"]
 
     for habit in track(habits, description="Converting habits..."):
-        errors = c.convert_bool_habit_to_num(habit_name=habit, new_value=new_value)
+        errors = c.convert_bool_habit_to_num(
+            habit_name=habit, new_value=new_value, target_value=target_value
+        )
         if errors:
             console.print(errors, style="red")
 
