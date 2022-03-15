@@ -59,8 +59,24 @@ def select_outputdb(outputdb, overwrite: bool = False) -> str:
 
 
 def main(
-    db: str = "", outputdb: str = "", habits: List = [], yes: bool = False, version: bool = False
+    db: str = "",
+    outputdb: str = "",
+    habits: List = [],
+    new_value: int = 1000,
+    yes: bool = False,
+    version: bool = False,
 ):
+    """
+    entrypoint for uhabits converter cli
+
+    Args:
+        db:         input database path (must already exist)
+        outputdb:   output database path (if already exists, confirm overwrite)
+        habits:     list of boolean habits to convert to numeric
+        new_value:  new numeric value. default is 1000. sqlite has no float type, so large int is used for float precision. e.g. if you want 2, set as 2000.
+        yes:        answer yes to all prompts.
+        version:    print version.
+    """
     if version:
         return __version__
 
@@ -85,7 +101,7 @@ def main(
         include_archived = (
             Prompt.ask("Would you like to convert archived habits", choices=["y", "n"]) == "y"
         )
-        bool_habits = c.get_bool_habits(include_archived)
+        bool_habits = c.get_bool_habits(include_archived=include_archived, sort="name")
         habits = inquirer.prompt(
             [
                 inquirer.Checkbox(
@@ -95,13 +111,9 @@ def main(
                 ),
             ]
         )["habits"]
-        # Standard Library
-        import pdb
-
-        pdb.set_trace()
 
     for habit in track(habits, description="Converting habits..."):
-        errors = c.convert_bool_habit_to_num(habit_name=habit)
+        errors = c.convert_bool_habit_to_num(habit_name=habit, new_value=new_value)
         if errors:
             console.print(errors, style="red")
 
