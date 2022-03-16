@@ -49,8 +49,8 @@ class TestConverter(unittest.TestCase):
         expected = ["Coffee", "Gym", "Drink", "Program"]
         assert expected == actual
 
-    def test_convert_bool_habit_to_num(self):
-        # assert coffee and reps are boolean
+    def test_convert_bool_habit_to_num_with_taget_value(self):
+        # assert habit and reps are boolean
         habit_before = self.get_habit_by_name("Coffee")
         reps_before = self.get_entries_by_id(habit_before["Id"])
         assert habit_before["type"] == 0
@@ -58,18 +58,47 @@ class TestConverter(unittest.TestCase):
         assert all([rep["value"] == 2 for rep in reps_before])
 
         # Assert all boolean habits
-        bool_habits_before = [v["name"] for v in self.converter.get_bool_habits()]
-        assert ["Coffee", "Gym", "Drink", "Program"] == bool_habits_before
+        bool_habits_before = [v["name"] for v in self.converter.get_bool_habits(sort="name")]
+        assert ["Coffee", "Drink", "Gym", "Program"] == bool_habits_before
 
         self.converter.convert_bool_habit_to_num("Coffee")
 
-        # Assert only Coffee has changed
-        bool_habits_after = [v["name"] for v in self.converter.get_bool_habits()]
-        assert ["Gym", "Drink", "Program"] == bool_habits_after
+        # Assert only habit has been removed
+        bool_habits_after = [v["name"] for v in self.converter.get_bool_habits(sort="name")]
+        assert ["Drink", "Gym", "Program"] == bool_habits_after
 
-        # assert coffee and reps are numeric
+        # assert habit and reps are numeric
         habit_after = self.get_habit_by_name("Coffee")
         reps_after = self.get_entries_by_id(habit_after["Id"])
         assert habit_after["type"] == 1
         assert habit_after["target_value"] == 7
+        assert all([rep["value"] == 1000 for rep in reps_after])
+
+    def test_convert_bool_habit_to_num_archived(self):
+        # assert habit and reps are boolean
+        habit_before = self.get_habit_by_name("Sweets")
+        reps_before = self.get_entries_by_id(habit_before["Id"])
+        assert habit_before["type"] == 0
+        assert habit_before["target_value"] == 0
+        assert all([rep["value"] == 2 for rep in reps_before])
+
+        # Assert only habit has been removed
+        bool_habits_before = [
+            v["name"] for v in self.converter.get_bool_habits(sort="name", include_archived=True)
+        ]
+        assert ["Coffee", "Drink", "Gym", "Program", "Sweets"] == bool_habits_before
+
+        self.converter.convert_bool_habit_to_num("Sweets")
+
+        # Assert only habit has been removed
+        bool_habits_after = [
+            v["name"] for v in self.converter.get_bool_habits(sort="name", include_archived=True)
+        ]
+        assert ["Coffee", "Drink", "Gym", "Program"] == bool_habits_after
+
+        # assert habit and reps are numeric
+        habit_after = self.get_habit_by_name("Sweets")
+        reps_after = self.get_entries_by_id(habit_after["Id"])
+        assert habit_after["type"] == 1
+        assert habit_after["target_value"] == 0
         assert all([rep["value"] == 1000 for rep in reps_after])

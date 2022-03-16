@@ -82,9 +82,9 @@ def main(
     if version:
         return __version__
 
-    if not isinstance(habits, list):
+    if not any([isinstance(habits, v) for v in [list, tuple]]):
         console.print(
-            f"habits must be a list. got {type(habits)}. always include commas, even for a single habit. e.g. cli --habits=Gym,"
+            f"habits must be a list or tuple. got {type(habits)}. always include commas, even for a single habit. e.g. cli --habits=Gym,"
         )
         return False
 

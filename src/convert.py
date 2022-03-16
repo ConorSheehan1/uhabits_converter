@@ -43,11 +43,11 @@ class Converter:
         habit = dict(data)
 
         # update habit target_value if necessary
-        if habit["target_value"] < 1:
+        if habit["target_value"] < 1 and habit["freq_num"] > 1:
+            # TODO: everyday should get 365? x times pre week should get 7?, every month should get 30?
+            print_dict = {k: habit[k] for k in ["target_value", "freq_num"]}
             # boolean habits with a target of 0 have an implicit scope of weekly, choose 7 by default
-            print(
-                f"found target value of {habit['target_value']} < 1, updating to {target_value}..."
-            )
+            print(f"found {print_dict}, updating target_value={target_value}...")
             self.cursor.execute(
                 f"UPDATE Habits Set target_value = {target_value} where Id IS {habit['Id']} AND TYPE IS {self.bool_habit_type};"
             )
