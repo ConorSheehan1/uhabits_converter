@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "uhabits_converter"
-version = "0.1.0"
+version = "0.2.0"
 description = "convert types of habit from uhabits"
 authors = ["Conor Sheehan <conor.sheehan.dev@gmail.com>"]
 license = "MIT"
