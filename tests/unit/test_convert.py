@@ -100,5 +100,5 @@ class TestConverter(unittest.TestCase):
         habit_after = self.get_habit_by_name("Sweets")
         reps_after = self.get_entries_by_id(habit_after["Id"])
         assert habit_after["type"] == 1
-        assert habit_after["target_value"] == 0
+        assert habit_after["target_value"] == 365
         assert all([rep["value"] == 1000 for rep in reps_after])
