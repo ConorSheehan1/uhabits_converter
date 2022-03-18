@@ -1,7 +1,7 @@
 # Standard Library
 import shutil
 import sqlite3
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 
 
 class Converter:
@@ -18,6 +18,7 @@ class Converter:
         self.con = sqlite3.connect(outputdb)
         self.con.row_factory = sqlite3.Row  # use dict type, not tuple
         self.cursor = self.con.cursor()
+        self.preserve_options = ["logic", "graph", "none", "custom"]
 
     def get_bool_habits(self, sort="position", include_archived=False) -> sqlite3.Cursor:
         where = f"type IS {self.bool_habit_type}"
@@ -25,13 +26,42 @@ class Converter:
             where += " AND archived IS 0"
         return self.cursor.execute(f"SELECT * FROM Habits WHERE {where} ORDER BY {sort};")
 
+    def update_target_preserve_graph(self, habit: dict) -> dict:
+        # Keep freq_num whatever it already was, even though through the UI it is always 1 for numeric habits.
+        # 7 every week is closer to 1 every day for graph
+        if habit["freq_num"] == 1:
+            return {"freq_den": 7, "target_value": 7}
+        return {"target_value": habit["freq_num"]}
+
+    def update_target_preserve_logic(self, habit: dict) -> dict:
+        # freq_num is always 1 for numeric habits created through UI.
+        # freq_den sets every day, week, or month, target_value sets how many times in that interval.
+        return {"freq_num": 1, "target_value": habit["freq_num"]}
+
     def convert_bool_habit_to_num(
         self,
         habit_name: str,
         old_value: int = 2,
         new_value: int = 1000,
-        target_value: Union[int, bool] = True,
+        preserve: str = "logic",
+        target_value: Optional[int] = None,
     ) -> Union[str, Literal[False]]:
+        """
+        habit_name: name of habit
+        old_value: extra safeguard for updating repetitions. rep must have habit id, and old_value (default to 2 for boolean reps).
+        new_value: new value for repetition. default is 1000, equivalent to 1 in UI for float approximation.
+        preserve: strategy for changing habit freq_den, freq_num, and target_value.
+            logic: treat habit as if it was created as numeric from the beginning.
+            graph: try to keep graphs the same but convert to numeric.
+            none: do not update field.
+            custom: use custom target_value.
+        target_value: custom target_value. only use if preserve is 'custom'.
+        """
+        if preserve not in self.preserve_options:
+            return f"preserve {preserve} must be one of {self.preserve_options}"
+        if target_value is not None and preserve != "custom":
+            return f"preserve must be 'custom' to set target_value"
+
         # TODO: pass habit_id, handle duplicate habits with same name
         # different new_value may require change to sqlite_repetitions table?
         data = next(
@@ -42,39 +72,19 @@ class Converter:
         )
         # TODO: separate error for already numeric habit and no habit found
         if not data:
-            return f"Could not find habit with type {self.bool_habit_type} (boolean) and name '{habit_name}'"
-
+            return f"Could not find habit with name '{habit_name}'"
         habit = dict(data)
+        if habit["type"] != self.bool_habit_type:
+            return f"Could not find habit with type ${self.bool_habit_type} and name '{habit_name}'"
 
-        expected_habit_targets = {1: 365}
-
-        if target_value is not False:
-            if target_value is not True:
-                # target value is neither True nor False, must be int
-                # TODO: probably need to update freq_num/freq_den too
-                new_target = target_value
-            else:
-                freq_num = 1
-                # TODO: coffee case
-                # bool          {freq_den: 7 freq_num: 5, target_value: 0}
-                # numeric curr  {freq_den: 7, freq_num: 1, target_value: 5}
-                # numeric best  {freq_den: 7, freq_num: 5, target_value: 7}
-                if habit["freq_num"] == 1:
-                    # 7 every week is closer to 1 every day for graph
-                    new_target = 7
-                    freq_den = 7
-                else:
-                    # otherwise use freq_num as target and set freq_num to 1.
-                    # TODO: drink case
-                    # e.g. twice per week as boolean is {freq_den:7, freq_num: 2, target_value: 0}
-                    # as numeric is {freq_den: 7, freq_num: 1, target_value: 2}
-                    new_target = habit["freq_num"]
-                    freq_den = None
-            print_dict = {k: habit[k] for k in ["name", "target_value", "freq_num"]}
-            update_dict = {"target_value": new_target, "freq_num": freq_num}
-            if freq_den is not None:
-                update_dict["freq_den"] = freq_den
-
+        if preserve == "logic":
+            update_dict = self.update_target_preserve_logic(habit)
+        if preserve == "graph":
+            update_dict = self.update_target_preserve_graph(habit)
+        if preserve == "custom":
+            update_dict = {"target_value": target_value}
+        if preserve != "none":
+            print_dict = {k: habit[k] for k in ["name", "freq_den", "freq_num", "target_value"]}
             update_str = ", ".join([f"{k} = {v}" for k, v in update_dict.items()])
             print(
                 f"found {print_dict}{' ':<{75 - len(str(print_dict))}} updating {update_dict} ..."

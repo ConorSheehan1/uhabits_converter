@@ -1,6 +1,6 @@
 # Standard Library
 import os
-from typing import List, Union
+from typing import List, Optional, Union
 
 # Third party
 import fire
@@ -63,7 +63,8 @@ def main(
     outputdb: str = "",
     habits: List = [],
     new_value: int = 1000,
-    target_value: Union[int, bool] = True,
+    preserve: str = "logic",
+    target_value: Optional[int] = None,
     yes: bool = False,
     version: bool = False,
 ):
@@ -74,10 +75,12 @@ def main(
         db:             input database path. must already exist. if not provided, choose interactively.
         outputdb:       output database path. if already exists, confirm overwrite.
         habits:         list of boolean habits to convert to numeric. if not provided, choose interactively.
-        new_value:      new numeric value. default is 1000. sqlite has no float type, so large int is used for float precision. e.g. if you want 2, set as 2000.
-        target_value:   if True (default) target_values will be updated automatically to keep as close to original graphs as possible.
-                        if False target_values will not be updated. graphs will look different.
-                        if integer, will use that integer as the target_value for all update habits.
+        preserve: strategy for changing habit freq_den, freq_num, and target_value.
+            logic: treat habit as if it was created as numeric from the beginning.
+            graph: try to keep graphs the same but convert to numeric.
+            none: do not update field.
+            custom: use custom target_value.
+        target_value: custom target_value. only use if preserve is 'custom'.
         yes:            answer yes to all prompts.
         version:        print version.
     """
@@ -118,7 +121,7 @@ def main(
 
     for habit in track(habits, description="Converting habits..."):
         errors = c.convert_bool_habit_to_num(
-            habit_name=habit, new_value=new_value, target_value=target_value
+            habit_name=habit, new_value=new_value, preserve=preserve, target_value=target_value
         )
         if errors:
             console.print(errors, style="red")

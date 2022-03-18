@@ -49,11 +49,31 @@ class TestConverter(unittest.TestCase):
         expected = ["Coffee", "Gym", "Drink", "Program"]
         assert expected == actual
 
-    def test_convert_bool_habit_to_num_with_taget_value(self):
+    def test_convert_bool_habit_to_num_preserve_arg(self):
+        self.converter.convert_bool_habit_to_num(
+            "asdf", preserve="adsf"
+        ) == "preserve 'asdf' must be one of ['logic', 'graph', 'none', 'custom']"
+
+    def test_convert_bool_habit_to_num_target_value(self):
+        self.converter.convert_bool_habit_to_num(
+            "asdf", target_value=2
+        ) == "preserve must be 'custom' to set target_value"
+
+    def test_convert_bool_habit_to_num_not_found(self):
+        self.converter.convert_bool_habit_to_num("asdf") == "Could not find habit with name 'asdf'"
+
+    def test_convert_bool_habit_to_num_wrong_type(self):
+        self.converter.convert_bool_habit_to_num(
+            "Tea"
+        ) == "Could not find habit with type 2 and name 'Tea'"
+
+    def test_convert_bool_habit_to_num(self):
         # assert habit and reps are boolean
         habit_before = self.get_habit_by_name("Coffee")
         reps_before = self.get_entries_by_id(habit_before["Id"])
         assert habit_before["type"] == 0
+        assert habit_before["freq_den"] == 7
+        assert habit_before["freq_num"] == 5
         assert habit_before["target_value"] == 0
         assert all([rep["value"] == 2 for rep in reps_before])
 
@@ -71,7 +91,38 @@ class TestConverter(unittest.TestCase):
         habit_after = self.get_habit_by_name("Coffee")
         reps_after = self.get_entries_by_id(habit_after["Id"])
         assert habit_after["type"] == 1
-        assert habit_after["target_value"] == 7
+        assert habit_after["freq_den"] == 7
+        assert habit_after["freq_num"] == 1
+        assert habit_after["target_value"] == 5
+        assert all([rep["value"] == 1000 for rep in reps_after])
+
+    def test_convert_bool_habit_to_num_preserve_graph(self):
+        # assert habit and reps are boolean
+        habit_before = self.get_habit_by_name("Coffee")
+        reps_before = self.get_entries_by_id(habit_before["Id"])
+        assert habit_before["type"] == 0
+        assert habit_before["freq_den"] == 7
+        assert habit_before["freq_num"] == 5
+        assert habit_before["target_value"] == 0
+        assert all([rep["value"] == 2 for rep in reps_before])
+
+        # Assert all boolean habits
+        bool_habits_before = [v["name"] for v in self.converter.get_bool_habits(sort="name")]
+        assert ["Coffee", "Drink", "Gym", "Program"] == bool_habits_before
+
+        self.converter.convert_bool_habit_to_num("Coffee", preserve="graph")
+
+        # Assert only habit has been removed
+        bool_habits_after = [v["name"] for v in self.converter.get_bool_habits(sort="name")]
+        assert ["Drink", "Gym", "Program"] == bool_habits_after
+
+        # assert habit and reps are numeric
+        habit_after = self.get_habit_by_name("Coffee")
+        reps_after = self.get_entries_by_id(habit_after["Id"])
+        assert habit_after["type"] == 1
+        assert habit_after["freq_den"] == 7
+        assert habit_after["freq_num"] == 5  # different to default preserve=logic
+        assert habit_after["target_value"] == 5
         assert all([rep["value"] == 1000 for rep in reps_after])
 
     def test_convert_bool_habit_to_num_archived(self):
@@ -79,6 +130,8 @@ class TestConverter(unittest.TestCase):
         habit_before = self.get_habit_by_name("Sweets")
         reps_before = self.get_entries_by_id(habit_before["Id"])
         assert habit_before["type"] == 0
+        assert habit_before["freq_den"] == 1
+        assert habit_before["freq_num"] == 1
         assert habit_before["target_value"] == 0
         assert all([rep["value"] == 2 for rep in reps_before])
 
@@ -100,5 +153,7 @@ class TestConverter(unittest.TestCase):
         habit_after = self.get_habit_by_name("Sweets")
         reps_after = self.get_entries_by_id(habit_after["Id"])
         assert habit_after["type"] == 1
-        assert habit_after["target_value"] == 365
+        assert habit_after["freq_den"] == 1
+        assert habit_after["freq_num"] == 1
+        assert habit_after["target_value"] == 1
         assert all([rep["value"] == 1000 for rep in reps_after])
