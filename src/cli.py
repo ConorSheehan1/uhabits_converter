@@ -9,8 +9,8 @@ from rich.console import Console
 from rich.progress import track
 from rich.prompt import Prompt
 
-from convert import Converter
-from version import __version__
+from src.convert import Converter
+from src.version import __version__
 
 console = Console(color_system="auto")
 
@@ -58,7 +58,7 @@ def select_outputdb(outputdb, overwrite: bool = False) -> str:
         return proposed_db
 
 
-def main(
+def cli(
     db: str = "",
     outputdb: str = "",
     habits: List = [],
@@ -99,9 +99,8 @@ def main(
     outputdb = outputdb or "output.db"
     outputdb = select_outputdb(outputdb, overwrite=yes)
 
-    kwargs = {"inputdb": db, "outputdb": outputdb}
     console.print(f"Reading from {db}, writing to {outputdb}", style="green")
-    c = Converter(**kwargs)
+    c = Converter(inputdb=db, outputdb=outputdb)
 
     if not habits:
         console.print(f"Selecting habits interactively")
@@ -127,5 +126,9 @@ def main(
             console.print(errors, style="red")
 
 
+def main():
+    fire.Fire(cli)
+
+
 if __name__ == "__main__":
-    fire.Fire(main)
+    main()

@@ -25,10 +25,19 @@ It has been tested with version [2.0.3](https://github.com/iSoron/uhabits/releas
 
 ## Installation
 ```bash
+# option 1 github release
+pip install https://github.com/ConorSheehan1/uhabits_converter/releases/latest/download/uhabits_converter.tar.gz
+
+# option 2 from source
 # install python (>=3.8 check pyproject.toml)
 # https://github.com/ConorSheehan1/uhabits_converter/blob/main/pyproject.toml#L9
-pip install poetry
+git clone git@github.com:ConorSheehan1/uhabits_converter.git
+cd uhabits_converter
 poetry install
+# if you want the uhabits_converter command available run the lines below.
+# otherwise you can use: PYTHONPATH=$(pwd) poetry run task dev
+poetry build
+pip install .
 ```
 
 ### Steps to convert habits
@@ -36,9 +45,9 @@ poetry install
     1. https://github.com/iSoron/uhabits/discussions/689 
     > Select the option "Export full backup" on the settings screen.
 2. Copy the `.db` file to your computer
-3. `poetry run task cli`
+3. `uhabits_converter --help`
     1. You can specify arguments up front or interactively. e.g.
-    `poetry run task cli --db=Loop_Habits_Backup_2022-02-28_220305.db --habits=Gym,Coffee`
+    `uhabits_converter --db=Loop_Habits_Backup_2022-02-28_220305.db --habits=Gym,Coffee`
     this will convert the habits Gym and Coffee from boolean to numeric habits.
     now you can track hours in the gym and cups of coffee, rather than just the days you went to the Gym or drank coffee.
 4. copy the `output.db` file back to your android device.

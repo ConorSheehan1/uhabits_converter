@@ -1,7 +1,12 @@
-## Installing dependencies
+#### Dev Install
 ```bash
-pip install poetry
 poetry install
+
+# install uhabits_converter as symlink to avoid reinstall whenever code changes
+# instead of pip install /path/to/uhabits_converter
+# https://github.com/python-poetry/poetry/issues/1135
+# workaround using __name__ == '__main__' and fire
+poetry run task dev
 ```
 
 ### Tests
