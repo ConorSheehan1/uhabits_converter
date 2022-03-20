@@ -16,11 +16,10 @@ It has been tested with version [2.0.3](https://github.com/iSoron/uhabits/releas
 
 ## Features
 1. Convert boolean habits to the new numeric habit type.
-
-## Example output
-| Before                                          | After                                         |
-| ----------------------------------------------- | --------------------------------------------- |
-| ![coffee_bool](.github/images/coffee_bool.jpg)  | ![coffee_num](.github/images/coffee_num.jpg)  |
+    **Example output**
+    | Before                                          | After                                         |
+    | ----------------------------------------------- | --------------------------------------------- |
+    | ![coffee_bool](.github/images/coffee_bool.jpg)  | ![coffee_num](.github/images/coffee_num.jpg)  |
 
 
 ## Installation
@@ -45,7 +44,7 @@ pip install .
     1. https://github.com/iSoron/uhabits/discussions/689 
     > Select the option "Export full backup" on the settings screen.
 2. Copy the `.db` file to your computer
-3. `uhabits_converter --help`
+3. Run `uhabits_converter` from a terminal
     1. You can specify arguments up front or interactively. e.g.
     `uhabits_converter --db=Loop_Habits_Backup_2022-02-28_220305.db --habits=Gym,Coffee`
     this will convert the habits Gym and Coffee from boolean to numeric habits.
