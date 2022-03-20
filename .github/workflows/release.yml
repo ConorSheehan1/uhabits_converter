@@ -1,0 +1,74 @@
+name: release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    name: Upload Release Assets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.9
+      - name: Parse version
+        id: version
+        run: echo ::set-output name=version::${GITHUB_REF/refs\/tags\/v}
+      - name: Install Poetry
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+      - name: Install python packages
+        run: poetry install
+      - name: Build package
+        run: poetry build
+      - name: Copy build files to generic names
+        id: file_names
+        run: |
+          cp dist/uhabits_converter-${{ steps.version.outputs.version }}.tar.gz dist/uhabits_converter.tar.gz
+          cp dist/uhabits_converter-${{ steps.version.outputs.version }}-py3-none-any.whl dist/uhabits_converter-py3-none-any.whl
+          echo ::set-output name=tar_file::uhabits_converter.tar.gz
+          echo ::set-output name=wheel_file::uhabits_converter-py3-none-any.whl
+      - name: Generate SHAs
+        id: sha
+        run: |
+          echo ::set-output name=tar_sha::$(shasum -a 256 dist/${{ steps.file_names.outputs.tar_file }})
+          echo ::set-output name=wheel_sha::$(shasum -a 256 dist/${{ steps.file_names.outputs.wheel_file }})
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: true
+          prerelease: true
+          body: |
+            SHA256 checksums
+            - ${{ steps.sha.outputs.tar_sha }}
+            - ${{ steps.sha.outputs.wheel_sha }}
+      - name: Upload tar.gz to Release
+        id: upload-tar
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/${{ steps.file_names.outputs.tar_file }}
+          asset_name: ${{ steps.file_names.outputs.tar_file }}
+          asset_content_type: application/tar+gz
+      - name: Upload wheel to Release
+        id: upload-wheel
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/${{ steps.file_names.outputs.wheel_file }}
+          asset_name: ${{ steps.file_names.outputs.wheel_file }}
+          asset_content_type: application/x-pywheel+zip
