@@ -74,6 +74,13 @@ class Converter:
         if not data:
             return f"Could not find habit with name '{habit_name}'"
         habit = dict(data)
+        # some variance in schema, can be capitalized or not. see issue #6
+        if "Id" in habit:
+            habit_id = habit["Id"]
+            where_habit_str = f"Id IS {habit['Id']}"
+        else:
+            habit_id = habit["id"]
+            where_habit_str = f"id IS {habit['id']}"
         if habit["type"] != self.bool_habit_type:
             return f"Could not find habit with type ${self.bool_habit_type} and name '{habit_name}'"
 
@@ -90,12 +97,12 @@ class Converter:
                 f"found {print_dict}{' ':<{75 - len(str(print_dict))}} updating {update_dict} ..."
             )
             self.cursor.execute(
-                f"UPDATE Habits Set {update_str} where Id IS {habit['Id']} AND TYPE IS {self.bool_habit_type};"
+                f"UPDATE Habits Set {update_str} where {where_habit_str} AND TYPE IS {self.bool_habit_type};"
             )
 
         # update habit type
         self.cursor.execute(
-            f"UPDATE Habits Set type = 1 where Id IS {habit['Id']} AND TYPE IS {self.bool_habit_type};"
+            f"UPDATE Habits Set type = 1 where {where_habit_str} AND TYPE IS {self.bool_habit_type};"
         )
 
         # update reps
@@ -103,7 +110,7 @@ class Converter:
             f"""
             UPDATE Repetitions
             SET value = {new_value}
-            WHERE habit is {habit['Id']} AND value IS {old_value};
+            WHERE habit is {habit_id} AND value IS {old_value};
             """
         )
 

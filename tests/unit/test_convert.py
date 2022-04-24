@@ -14,6 +14,7 @@ from src.convert import Converter
 
 class TestConverter(unittest.TestCase):
     def setUp(self):
+        self.id_field = "Id"
         cwd = os.path.abspath(os.path.dirname(__file__))
         data_dir = os.path.join(cwd, "..", "data")
         csv_glob = os.path.join(data_dir, "*.csv")
@@ -70,7 +71,7 @@ class TestConverter(unittest.TestCase):
     def test_convert_bool_habit_to_num(self):
         # assert habit and reps are boolean
         habit_before = self.get_habit_by_name("Coffee")
-        reps_before = self.get_entries_by_id(habit_before["Id"])
+        reps_before = self.get_entries_by_id(habit_before[self.id_field])
         assert habit_before["type"] == 0
         assert habit_before["freq_den"] == 7
         assert habit_before["freq_num"] == 5
@@ -89,7 +90,7 @@ class TestConverter(unittest.TestCase):
 
         # assert habit and reps are numeric
         habit_after = self.get_habit_by_name("Coffee")
-        reps_after = self.get_entries_by_id(habit_after["Id"])
+        reps_after = self.get_entries_by_id(habit_after[self.id_field])
         assert habit_after["type"] == 1
         assert habit_after["freq_den"] == 7
         assert habit_after["freq_num"] == 1
@@ -99,7 +100,7 @@ class TestConverter(unittest.TestCase):
     def test_convert_bool_habit_to_num_preserve_graph(self):
         # assert habit and reps are boolean
         habit_before = self.get_habit_by_name("Coffee")
-        reps_before = self.get_entries_by_id(habit_before["Id"])
+        reps_before = self.get_entries_by_id(habit_before[self.id_field])
         assert habit_before["type"] == 0
         assert habit_before["freq_den"] == 7
         assert habit_before["freq_num"] == 5
@@ -118,7 +119,7 @@ class TestConverter(unittest.TestCase):
 
         # assert habit and reps are numeric
         habit_after = self.get_habit_by_name("Coffee")
-        reps_after = self.get_entries_by_id(habit_after["Id"])
+        reps_after = self.get_entries_by_id(habit_after[self.id_field])
         assert habit_after["type"] == 1
         assert habit_after["freq_den"] == 7
         assert habit_after["freq_num"] == 5  # different to default preserve=logic
@@ -128,7 +129,7 @@ class TestConverter(unittest.TestCase):
     def test_convert_bool_habit_to_num_archived(self):
         # assert habit and reps are boolean
         habit_before = self.get_habit_by_name("Sweets")
-        reps_before = self.get_entries_by_id(habit_before["Id"])
+        reps_before = self.get_entries_by_id(habit_before[self.id_field])
         assert habit_before["type"] == 0
         assert habit_before["freq_den"] == 1
         assert habit_before["freq_num"] == 1
@@ -151,9 +152,30 @@ class TestConverter(unittest.TestCase):
 
         # assert habit and reps are numeric
         habit_after = self.get_habit_by_name("Sweets")
-        reps_after = self.get_entries_by_id(habit_after["Id"])
+        reps_after = self.get_entries_by_id(habit_after[self.id_field])
         assert habit_after["type"] == 1
         assert habit_after["freq_den"] == 1
         assert habit_after["freq_num"] == 1
         assert habit_after["target_value"] == 1
         assert all([rep["value"] == 1000 for rep in reps_after])
+
+
+class TestConverterAltSchema(TestConverter):
+    """
+    same tests but with alternate schema
+    """
+
+    def setUp(self):
+        self.id_field = "id"  # lowercase id, see issues #6
+        cwd = os.path.abspath(os.path.dirname(__file__))
+        data_dir = os.path.join(cwd, "..", "data")
+        csv_glob = os.path.join(data_dir, "*_alt.csv")
+        # create sql db in memory for test
+        self.converter = Converter(inputdb="", outputdb=":memory:", create_outputdb=False)
+        for csv_file in glob.glob(csv_glob):
+            self.load_csv_to_table(csv_file)
+
+    def load_csv_to_table(self, csv_path: str):
+        table = os.path.basename(csv_path).replace("_alt.csv", "")
+        df = pandas.read_csv(csv_path)
+        df.to_sql(table, self.converter.con)
