@@ -24,10 +24,13 @@ It has been tested with version [2.0.3](https://github.com/iSoron/uhabits/releas
 
 ## Installation
 ```bash
-# option 1 github release
+# options 1 pypi
+pip install uhabits-converter
+
+# option 2 github release
 pip install https://github.com/ConorSheehan1/uhabits_converter/releases/latest/download/uhabits_converter.tar.gz
 
-# option 2 from source
+# option 3 from source
 # install python (>=3.8 check pyproject.toml)
 # https://github.com/ConorSheehan1/uhabits_converter/blob/main/pyproject.toml#L9
 git clone git@github.com:ConorSheehan1/uhabits_converter.git
