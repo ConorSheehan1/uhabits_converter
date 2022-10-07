@@ -93,9 +93,8 @@ class Converter:
         if preserve != "none":
             print_dict = {k: habit[k] for k in ["name", "freq_den", "freq_num", "target_value"]}
             update_str = ", ".join([f"{k} = {v}" for k, v in update_dict.items()])
-            print(
-                f"found {print_dict}{' ':<{75 - len(str(print_dict))}} updating {update_dict} ..."
-            )
+            print(f"found {print_dict}")
+            print(f"\tupdating {update_dict} ...")
             self.cursor.execute(
                 f"UPDATE Habits Set {update_str} where {where_habit_str} AND TYPE IS {self.bool_habit_type};"
             )

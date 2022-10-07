@@ -1,4 +1,5 @@
 # Standard Library
+import glob
 import os
 from typing import List, Optional, Union
 
@@ -16,50 +17,74 @@ console = Console(color_system="auto")
 
 
 def select_db() -> str:
+    cwd_interactive = False
     while True:
-        proposed_db = Prompt.ask("Please choose a .db file to read from")
+        # glob is not expensive and user may move files while prompt is still open, so check every loop
+        db_files_in_cwd = glob.glob("*.db")
+        if cwd_interactive:
+            inquirer_args = [
+                inquirer.List(
+                    "inputdb",
+                    message="choose an input .db file",
+                    choices=list(db_files_in_cwd),
+                ),
+            ]
+        else:
+            inquirer_args = [
+                inquirer.Path(
+                    "inputdb",
+                    message="choose an input .db file",
+                    path_type=inquirer.Path.FILE,
+                )
+            ]
+        proposed_db = inquirer.prompt(inquirer_args)["inputdb"]
+
         if not os.path.exists(proposed_db):
-            console.print(f"could not find file {proposed_db}", style="yellow")
+            console.print(f"{proposed_db} not found", style="yellow")
+            # only allow interactive prompt is there are .db files in cwd
+            if db_files_in_cwd:
+                cwd_interactive = Prompt.ask(f"choose interactively?", choices=["y", "n"]) == "y"
             continue
         if not proposed_db.endswith(".db"):
-            console.print(f"please choose a .db file", style="yellow")
+            console.print(f"inputdb must end with .db", style="yellow")
             continue
         return proposed_db
 
 
 def overwrite_file(path: str) -> bool:
-    return (
-        Prompt.ask(f"{path} already exists. Would you like to overwrite it?", choices=["y", "n"])
-        == "y"
-    )
+    return Prompt.ask(f"{path} already exists. overwrite?", choices=["y", "n"]) == "y"
 
 
-def select_outputdb(outputdb, overwrite: bool = False) -> str:
+def select_outputdb(outputdb, inputdb, overwrite: bool = False) -> str:
+    proposed_db = outputdb
     while True:
-        if not os.path.exists(outputdb):
-            return outputdb
+        if not proposed_db.endswith(".db"):
+            console.print(f"outputdb must end with .db", style="yellow")
+        else:
+            if not os.path.exists(proposed_db):
+                return proposed_db
 
-        if overwrite or overwrite_file(outputdb):
-            return outputdb
+            if proposed_db == inputdb:
+                console.print(
+                    f"outputdb can't be the same as inputdb. choose another .db file",
+                    style="yellow",
+                )
+            elif overwrite or overwrite_file(proposed_db):
+                return proposed_db
 
         proposed_db = inquirer.prompt(
             [
                 inquirer.Path(
                     "outputdb",
-                    message="Please choose a .db file to write to",
-                    path_type=inquirer.Path.DIRECTORY,
+                    message="choose an output .db file",
+                    path_type=inquirer.Path.FILE,
                 ),
             ]
-        )
-
-        if not proposed_db.endswith(".db"):
-            console.print(f"please choose a .db file", style="yellow")
-            continue
-        return proposed_db
+        )["outputdb"]
 
 
 def cli(
-    db: str = "",
+    inputdb: str = "",
     outputdb: str = "",
     habits: List = [],
     new_value: int = 1000,
@@ -72,7 +97,7 @@ def cli(
     entrypoint for uhabits converter cli
 
     Args:
-        db:             input database path. must already exist. if not provided, choose interactively.
+        inputdb:             input database path. must already exist. if not provided, choose interactively.
         outputdb:       output database path. if already exists, confirm overwrite.
         habits:         list of boolean habits to convert to numeric. if not provided, choose interactively.
         preserve: strategy for changing habit freq_den, freq_num, and target_value.
@@ -93,30 +118,33 @@ def cli(
         )
         return False
 
-    if not db:
-        db = select_db()
+    if not inputdb:
+        inputdb = select_db()
 
     outputdb = outputdb or "output.db"
-    outputdb = select_outputdb(outputdb, overwrite=yes)
+    outputdb = select_outputdb(outputdb, inputdb, overwrite=yes)
 
-    console.print(f"Reading from {db}, writing to {outputdb}", style="green")
-    c = Converter(inputdb=db, outputdb=outputdb)
+    console.print(f"Reading from {inputdb}, writing to {outputdb}", style="green")
+    c = Converter(inputdb=inputdb, outputdb=outputdb)
 
     if not habits:
         console.print(f"Selecting habits interactively")
-        include_archived = (
-            Prompt.ask("Would you like to convert archived habits", choices=["y", "n"]) == "y"
-        )
+        include_archived = Prompt.ask("convert archived habits", choices=["y", "n"]) == "y"
         bool_habits = c.get_bool_habits(include_archived=include_archived, sort="name")
-        habits = inquirer.prompt(
-            [
-                inquirer.Checkbox(
-                    "habits",
-                    message="Which habits would you like to convert?",
-                    choices=[h["name"] for h in bool_habits],
-                ),
-            ]
-        )["habits"]
+        while not habits:
+            habits = inquirer.prompt(
+                [
+                    inquirer.Checkbox(
+                        "habits",
+                        message="choose habits to convert",
+                        choices=[h["name"] for h in bool_habits],
+                    ),
+                ]
+            )["habits"]
+            if not habits:
+                console.print(
+                    f"no habits selected. make a selection using right arrow key. unselect using left arrow. navigate using up / down."
+                )
 
     for habit in track(habits, description="Converting habits..."):
         errors = c.convert_bool_habit_to_num(
