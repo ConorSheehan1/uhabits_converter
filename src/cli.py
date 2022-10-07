@@ -21,7 +21,6 @@ def select_db() -> str:
     while True:
         # glob is not expensive and user may move files while prompt is still open, so check every loop
         db_files_in_cwd = glob.glob("*.db")
-        # TODO: only prompt if .db files exist? limit choices to valid .db files
         if cwd_interactive:
             inquirer_args = [
                 inquirer.List(
@@ -85,7 +84,7 @@ def select_outputdb(outputdb, inputdb, overwrite: bool = False) -> str:
 
 
 def cli(
-    db: str = "",
+    inputdb: str = "",
     outputdb: str = "",
     habits: List = [],
     new_value: int = 1000,
@@ -98,7 +97,7 @@ def cli(
     entrypoint for uhabits converter cli
 
     Args:
-        db:             input database path. must already exist. if not provided, choose interactively.
+        inputdb:             input database path. must already exist. if not provided, choose interactively.
         outputdb:       output database path. if already exists, confirm overwrite.
         habits:         list of boolean habits to convert to numeric. if not provided, choose interactively.
         preserve: strategy for changing habit freq_den, freq_num, and target_value.
@@ -119,15 +118,14 @@ def cli(
         )
         return False
 
-    # TODO: rename to inputdb
-    if not db:
-        db = select_db()
+    if not inputdb:
+        inputdb = select_db()
 
     outputdb = outputdb or "output.db"
-    outputdb = select_outputdb(outputdb, db, overwrite=yes)
+    outputdb = select_outputdb(outputdb, inputdb, overwrite=yes)
 
-    console.print(f"Reading from {db}, writing to {outputdb}", style="green")
-    c = Converter(inputdb=db, outputdb=outputdb)
+    console.print(f"Reading from {inputdb}, writing to {outputdb}", style="green")
+    c = Converter(inputdb=inputdb, outputdb=outputdb)
 
     if not habits:
         console.print(f"Selecting habits interactively")
