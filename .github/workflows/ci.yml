@@ -23,12 +23,12 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04, ubuntu-latest, macos-latest, windows-latest]
-        python: ["3.8", "3.9", "3.10"]
+        python: ["3.9", "3.10"]
 
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@v4.8
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
       - name: Install Poetry
